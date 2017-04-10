@@ -1,32 +1,32 @@
 package main
 
 import (
-    "os"
+	"encoding/json"
 	"fmt"
 	"log"
-	"net/http"
-	"encoding/json"
-	"time"
 	"math/rand"
+	"net/http"
+	"os"
+	"time"
 )
 
-type Randomizable struct{
+type Randomizable struct {
 	Key			string
-    Value   	float64
+	Value		float64
 	Min 		float64
 	Max 		float64
 	Variance 	float64
 }
 
-type Randomized struct{
-	Key			string
-    Value   	float64
+type Randomized struct {
+	Key			string		`json:"key"`
+	Value		float64		`json:"value"`
 }
-
 
 func handler(writer http.ResponseWriter, req *http.Request) {
 	var randomizables []Randomizable
-	var result []Randomized
+	var results []Randomized
+
 	if req.Body == nil {
 		http.Error(writer, "Please send a request body", 400)
 		return
@@ -39,22 +39,21 @@ func handler(writer http.ResponseWriter, req *http.Request) {
 	}
 
 	for _, randomizable := range randomizables {
-		result = append(result, randomize(randomizable))
+		results = append(results, randomize(randomizable))
 	}
 
-	resultJson, err := json.Marshal(result)
+	resultJson, err := json.Marshal(results)
 	if err != nil {
 		http.Error(writer, err.Error(), 500)
 		return
 	}
+
 	fmt.Fprintf(writer, string(resultJson))
 }
-
 
 func randomize(randomizable Randomizable) Randomized {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 
-	// Randomize input
 	result := r.NormFloat64() * randomizable.Variance + randomizable.Value
 
 	if (result > randomizable.Max) {
@@ -68,13 +67,12 @@ func randomize(randomizable Randomizable) Randomized {
 	return Randomized { randomizable.Key, result }
 }
 
-
 func main() {
 	http.HandleFunc("/", handler)
 
-    port := os.Getenv("PORT")
+	port := os.Getenv("PORT")
 	if port == "" {
-        log.Fatal("PORT environment variable was not set")
+		log.Fatal("PORT environment variable was not set")
 	}
 
 	log.Println("Attempting to listen on port: ", port)
