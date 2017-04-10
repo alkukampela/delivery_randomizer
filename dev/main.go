@@ -11,7 +11,7 @@ import (
 )
 
 type Randomizable struct {
-	Key			string
+	Key		string
 	Value		float64
 	Min 		float64
 	Max 		float64
@@ -19,8 +19,8 @@ type Randomizable struct {
 }
 
 type Randomized struct {
-	Key			string		`json:"key"`
-	Value		float64		`json:"value"`
+	Key		string	`json:"key"`
+	Value		float64	`json:"value"`
 }
 
 func handler(writer http.ResponseWriter, req *http.Request) {
@@ -56,11 +56,11 @@ func randomize(randomizable Randomizable) Randomized {
 
 	result := r.NormFloat64() * randomizable.Variance + randomizable.Value
 
-	if (result > randomizable.Max) {
+	if result > randomizable.Max {
 		result = randomizable.Max
 	}
 
-	if (result < randomizable.Min) {
+	if result < randomizable.Min {
 		result = randomizable.Min
 	}
 
